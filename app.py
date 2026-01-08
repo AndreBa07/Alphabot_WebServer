@@ -21,9 +21,9 @@ def index():
             larry.left()
         elif action == "stop":
             larry.stop()
-    elif request.method == "GET":
         
-    render_template("./templates/index.html")
+    return render_template("./templates/index.html")
     
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=False)
+
