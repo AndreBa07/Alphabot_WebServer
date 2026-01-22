@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for,
+from flask import Flask, request, render_template, redirect, url_for
 import sqlite3 as sql
 import AlphaBot
 import time
@@ -9,6 +9,42 @@ larry = AlphaBot.AlphaBot()
 larry.stop()
 
 app = Flask(__name__)
+app.secret_key = "ChiaveSegreta"
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+class User(UserMixin):
+    def __init__(self, id):
+        self.id = id
+
+USERS = { # Sostituire con sqlite3
+    "admin": {"password": "alphabot"} # Fare una query che restituisce tutti gli utenti poi fare un for
+}
+
+@login_manager.user_loader
+def load_user(user_id):
+    if user_id in USERS:
+        return User(user_id)
+    return None
+# METTERE QUI ROTTA INDEX "/"
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        # Query per verificare che esista l'utente
+        if username in USERS and USERS[username]["password"] == password:
+            login_user(User(username))
+            return redirect(url_for("index"))
+    return render_template("login.html")
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
 
 con = sql.connect("movimenti_Larry.db") 
 cur = con.cursor()
@@ -42,6 +78,7 @@ def leggi_sequenza(sequenza):
             
             
 @app.route("/", methods=["GET", "POST"])
+@login_required
 def index():
     if request.method == "POST":
         action = request.form.get("action")
@@ -67,9 +104,10 @@ def index():
         elif action == "i":
             leggi_sequenza(sequenza_integrale)
         
-    return render_template("index.html")
+    return render_template("index.html", user = current_user.id)
     
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=False, use_reloader = False)
+
 
 
