@@ -1,0 +1,100 @@
+/* Reset base */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Sfondo */
+body {
+    background: #111;
+    color: white;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Form centrato */
+form {
+    display: grid;
+    grid-template-columns: repeat(3, 90px);
+    grid-gap: 15px;
+}
+
+/* Pulsanti */
+button {
+    width: 90px;
+    height: 90px;
+    font-size: 2rem;
+    border-radius: 15px;
+    border: none;
+    cursor: pointer;
+    background: #2c2c2c;
+    color: white;
+    transition: background 0.2s, transform 0.1s;
+}
+
+/* Effetto pressione */
+button:active {
+    transform: scale(0.95);
+    background: #444;
+}
+
+/* STOP evidenziato */
+button[value="stop"] {
+    background: #b00020;
+    grid-column: span 3;
+    font-size: 1.8rem;
+}
+
+button[value="stop"]:active {
+    background: #d32f2f;
+}
+
+/* Direzioni */
+button[value="forward"],
+button[value="backward"],
+button[value="left"],
+button[value="right"] {
+    background: #1e88e5;
+}
+
+button[value="forward"]:active,
+button[value="backward"]:active,
+button[value="left"]:active,
+button[value="right"]:active {
+    background: #42a5f5;
+}
+
+/* Figure */
+button[value="q"],
+button[value="t"],
+button[value="r"],
+button[value="c"],
+button[value="i"] {
+    background: #388e3c;
+}
+
+button[value="q"]:active,
+button[value="t"]:active,
+button[value="r"]:active,
+button[value="c"]:active,
+button[value="i"]:active {
+    background: #66bb6a;
+}
+
+/* Responsive (telefono) */
+@media (max-width: 480px) {
+    form {
+        grid-template-columns: repeat(3, 70px);
+        grid-gap: 10px;
+    }
+
+    button {
+        width: 70px;
+        height: 70px;
+        font-size: 1.6rem;
+    }
+}

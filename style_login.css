@@ -1,0 +1,26 @@
+body 
+{
+    background-color: burlywood;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* centro verticale */
+    align-items: center;     /* centro orizzontale */
+    height: 100vh;
+}
+
+input 
+{
+    height: 30px;
+    width: 200px;
+    text-align: center;
+    margin: 10px;
+}
+
+button {
+    background-color: blue;
+    color: white;
+    width: 100px;
+    height: 40px;
+    font-size: 30px;
+    text-align: center;
+}
