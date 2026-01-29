@@ -46,6 +46,10 @@ def logout():
     logout_user()
     return redirect(url_for("login"))
 
+con = sql.connect("utenti.db")
+cur = con.cursor()
+utenti = cur.execute("SELECT username, password FROM utenti").fetchall()
+
 con = sql.connect("movimenti_Larry.db") 
 cur = con.cursor()
 sequenza_q = cur.execute(f"SELECT Sequenza FROM movimenti WHERE Tasto = ?", ("q", )) 
@@ -108,6 +112,3 @@ def index():
     
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=False, use_reloader = False)
-
-
-
