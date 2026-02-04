@@ -1,8 +1,8 @@
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, flash
 import sqlite3 as sql
 import AlphaBot
 import time
-import secrets
+import hashlib
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 larry = AlphaBot.AlphaBot()
@@ -19,49 +19,68 @@ class User(UserMixin):
     def __init__(self, id):
         self.id = id
 
-USERS = { # Sostituire con sqlite3
-    "admin": {"password": "alphabot"} # Fare una query che restituisce tutti gli utenti poi fare un for
-}
-
 @login_manager.user_loader
 def load_user(user_id):
-    if user_id in USERS:
+    con = sql.connect("DB_utenti.db")
+    cur = con.cursor()
+    utente = cur.execute("SELECT utente FROM Utenti WHERE utente = ?", (user_id, )).fetchone()
+    con.close()
+    if utente:
         return User(user_id)
     return None
-# METTERE QUI ROTTA INDEX "/"
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        # Query per verificare che esista l'utente
-        if username in USERS and USERS[username]["password"] == password:
+        password_hash = hashlib.sha256(password.encode()).hexdigest()
+
+        con = sql.connect("DB_utenti.db")
+        cur = con.cursor()
+        exists = cur.execute("SELECT password FROM Utenti WHERE utente = ? AND password = ?", (username, password_hash, )).fetchone()
+        con.close()
+        if exists:
             login_user(User(username))
-            return redirect(url_for("index"))
+            return redirect(url_for("control"))
     return render_template("login.html")
+
+@app.route("/registration", methods=["GET", "POST"])
+def registration():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        con = sql.connect("DB_utenti.db")
+        cur = con.cursor()
+        exists = cur.execute("SELECT * FROM Utenti WHERE utente = ?", (username, )).fetchone()
+        if not exists:
+            password_hash = hashlib.sha256(password.encode()).hexdigest()
+
+            cur.execute("INSERT INTO Utenti(utente, password) VALUES (?, ?)", (username, password_hash, ))
+            con.commit()
+            con.close()
+
+            login_user(User(username))
+            return redirect(url_for("control"))
+        else:
+            con.close()
+            flash(f"Utente {username} già esistente")
+            return render_template("registration.html")
+    return render_template("registration.html")
 
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("login"))
-
-con = sql.connect("utenti.db")
-cur = con.cursor()
-utenti = cur.execute("SELECT username, password FROM utenti").fetchall()
+    return redirect(url_for("index"))
 
 con = sql.connect("movimenti_Larry.db") 
 cur = con.cursor()
-sequenza_q = cur.execute(f"SELECT Sequenza FROM movimenti WHERE Tasto = ?", ("q", )) 
-sequenza_quadrato = sequenza_q.fetchall() 
-sequenza_t = cur.execute(f"SELECT Sequenza FROM movimenti WHERE Tasto = ?", ("t", )) 
-sequenza_triangolo = sequenza_t.fetchall() 
-sequenza_r = cur.execute(f"SELECT Sequenza FROM movimenti WHERE Tasto = ?", ("r", )) 
-sequenza_rettangolo = sequenza_r.fetchall() 
-sequenza_c = cur.execute(f"SELECT Sequenza FROM movimenti WHERE Tasto = ?", ("c", )) 
-sequenza_cerchio = sequenza_c.fetchall() 
-sequenza_i = cur.execute(f"SELECT Sequenza FROM movimenti WHERE Tasto = ?", ("i", )) 
-sequenza_integrale = sequenza_i.fetchall() 
+sequenza_quadrato = cur.execute(f"SELECT Sequenza FROM movimenti WHERE Tasto = ?", ("q", )).fetchall()
+sequenza_triangolo = cur.execute(f"SELECT Sequenza FROM movimenti WHERE Tasto = ?", ("t", )).fetchall()
+sequenza_rettangolo = cur.execute(f"SELECT Sequenza FROM movimenti WHERE Tasto = ?", ("r", )).fetchall() 
+sequenza_cerchio = cur.execute(f"SELECT Sequenza FROM movimenti WHERE Tasto = ?", ("c", )).fetchall()
+sequenza_integrale = cur.execute(f"SELECT Sequenza FROM movimenti WHERE Tasto = ?", ("i", )).fetchall() 
 con.close()
 
 def leggi_sequenza(sequenza):
@@ -81,12 +100,11 @@ def leggi_sequenza(sequenza):
         larry.stop()
             
             
-@app.route("/", methods=["GET", "POST"])
+@app.route("/control", methods=["GET", "POST"])
 @login_required
-def index():
+def control():
     if request.method == "POST":
         action = request.form.get("action")
-
         if action == "forward":
             larry.forward()
         elif action == "backward":
@@ -108,7 +126,11 @@ def index():
         elif action == "i":
             leggi_sequenza(sequenza_integrale)
         
-    return render_template("index.html", user = current_user.id)
-    
+    return render_template("control.html", user = current_user.id)
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    return render_template("index.html")
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=False, use_reloader = False)

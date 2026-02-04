@@ -3,20 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Flask Pulsanti</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_index.css') }}">
 </head>
 <body>
-    <form method="post">
-        <button type="submit" id="action" name="action" value="forward">↑</button>
-        <button type="submit" id="action" name="action" value="backward">↓</button>
-        <button type="submit" id="action" name="action" value="left">←</button>
-        <button type="submit" id="action" name="action" value="right">→</button>
-        <button type="submit" id="action" name="action" value="stop">STOP</button>
-        <button type="submit" id="action" name="action" value="q">□</button>
-        <button type="submit" id="action" name="action" value="i">∫</button>
-        <button type="submit" id="action" name="action" value="t">△</button>
-        <button type="submit" id="action" name="action" value="r">▯</button>
-        <button type="submit" id="action" name="action" value="c">○</button>
+    <form action = "./login">
+        <button type="submit">Login</button>
     </form>
-    <script src="../index.js"></script>
+    <form action = "./registration">
+        <button type="submit">Registrati</button>
+    </form>
 </body>
